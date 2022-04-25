@@ -1,4 +1,5 @@
 const request = require("request");
+const APIKEY = require("./constants");
 
 /**
  * Makes a single API request to retrieve the user's IP address.
@@ -67,8 +68,27 @@ const fetchISSFlyOverTimes = function(coords, callback) {
   });
 };
 
-module.exports = {
-  fetchMyIP,
-  fetchCoordsByIP,
-  fetchISSFlyOverTimes
+/**
+ * Orchestrates multiple API requests in order to determine the next 5 upcoming ISS fly overs for the user's current location.
+ * @param {Function} callback A callback with an error or results
+ * @returns {Error} (via callback) An error, if any (nullable)
+ * @returns {Array} (via callback) The fly-over times as an array (null if error):
+ * @example [ { risetime: <number>, duration: <number> }, ... ]
+ */
+const nextISSTimesForMyLocation = function(callback) {
+  fetchMyIP((error, ip) => {
+    if (error) return callback(error, null);
+
+    fetchCoordsByIP(ip, APIKEY, (error, coords) => {
+      if (error) return callback(error, null);
+
+      fetchISSFlyOverTimes(coords, (error, flyOverTimes) => {
+        if (error) return callback(error, null);
+        
+        callback(error, flyOverTimes);
+      });
+    });
+  });
 };
+
+module.exports = { nextISSTimesForMyLocation };
