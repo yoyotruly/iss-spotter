@@ -9,14 +9,11 @@ const request = require("request");
 const fetchMyIP = function(callback) {
   const url = `https://api.ipify.org`;
   request(url, (error, response, body) => {
-    if (error) {
-      callback(error, null);
-    }
+    if (error) return callback(error, null);
 
     if (response.statusCode !== 200) {
       const msg = `Status code ${response.statusCode} when fetching IP. Response: ${body}`;
-      callback(Error(msg), null);
-      return;
+      return callback(Error(msg), null);
     }
     
     callback(null, body);
